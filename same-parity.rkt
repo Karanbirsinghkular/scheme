@@ -1,0 +1,27 @@
+#lang sicp
+(define x (list 1 2 3 4 5 6 7 8 9))
+(define y (list 1 2 3 4))
+
+(define (last-pair item)
+  (if (null? (cdr item))
+      item
+      (last-pair (cdr item))))
+
+(define (reverse-list item)
+  (if (null? (cdr item))
+      item
+      (append (reverse-list (cdr item)) (list (car item)))))
+
+(define (same-parity x . item)
+  (define (spar x y)
+    (if(= (remainder x 2) (remainder y 2)) #t #f))
+  (define (temp-name result counter)
+    (if (< counter (length item))
+        (if(spar x (list-ref item counter))
+           (temp-name (append result (list (list-ref item counter))) (+ 1 counter))
+           (temp-name result (+ 1 counter))
+            )
+        result))
+  (temp-name (list x) 0))
+
+(same-parity 16 2 3 4 5 6 7 8)

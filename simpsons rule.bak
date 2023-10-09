@@ -1,0 +1,6 @@
+#lang sicp
+(define (simpsonsrule lb ub fxn n)
+    (define (h ub lb n)(/ (- ub  lb) n))
+     
+  (n)
+  )

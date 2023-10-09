@@ -1,0 +1,83 @@
+#lang sicp
+(define (assoc key records )
+  (cond ((null? records) false)
+        ((equal? key (caar records)) (car records))
+        (else (assoc key (cdr records)))))
+(define (last-pair x)
+(if (null? (cdr x))
+    x
+    (last-pair (cdr x))))
+
+(define (fuckedupproc l val)
+  (define x (cons (car (last-pair l)) val))
+  (define (temp item)
+    (if (null? (cdr item))
+               x
+               (if (null? (cddr item))
+                   (list (car item) x)
+                   (list (car item) (temp (cdr item))))))
+    (temp l))
+
+
+(define (make-table key-eq?)
+  (let ((local-table (list '*table*)))
+
+    (define (temp-lookup list-key table)
+      (let ((subtable
+             (assoc (car list-key) (cdr table))))
+        (if subtable
+            (if (null? (cdr list-key))
+                (cdr subtable)
+                (temp-lookup (cdr list-key) subtable))
+            false)))
+    (define (lookup list-key)
+      (temp-lookup list-key local-table))
+
+    
+    (define (insert! list-key value table)
+      (let ((subtable
+             (assoc (car list-key) (cdr table))))
+        (if subtable
+            (if (null? (cdr list-key))
+                (set-cdr! subtable value)
+                (insert! (cdr list-key) value subtable))
+            (set-cdr! table
+                      (cons (fuckedupproc list-key value)
+                            (cdr table)))
+            ))
+      'ok)
+
+;    (define (insert! key-1 key-2 value)
+;      (let ((subtable
+;             (assoc key-1 (cdr local-table))))
+;        (if subtable
+;           (let ((record
+;                   (assoc key-2 (cdr subtable))))
+;              (if record
+;                  (set-cdr! record value)
+;                  (set-cdr! subtable
+;                            (cons (cons key-2 value)
+;                                  (cdr subtable)))))
+;            (set-cdr! local-table
+;                      (cons (list key-1 (cons key-2 value))
+;                            (cdr local-table)))))
+;      'ok)
+
+    (define (t-insert list-key val)
+      (insert! list-key val local-table))
+
+    
+    (define (dispatch m)
+      (cond ((eq? m 'lookup-proc) lookup)
+            ((eq? m 'insert-proc!) t-insert)
+            (else (error "Unknown operation: TABLE" m))))
+    dispatch))
+
+(define (t-eq? k1 k2) (<= (abs(- k1 k2)) 0.5))
+(define operation-table (make-table equal?))
+(define get (operation-table 'lookup-proc))
+(define put (operation-table 'insert-proc!))
+(put (list 99 1 5 5 4 3 2 5 6) 11)
+(put (list 6 5 4 'h 66 33 1) 33)
+(put (list 199 1 7) 44)
+(get (list 6 5 4 'h 66 33 1))

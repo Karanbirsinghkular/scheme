@@ -1,0 +1,95 @@
+#lang sicp
+(define x (list 'a 'b))
+(define (memq item x)
+  (cond ((null? x) false)
+        ((eq? item (car x)) x)
+        (else (memq item (cdr x)))))
+
+(define (equal? a b)
+  (if (and(pair? a)(pair? b))
+      (and(equal? (car a) (car b))(equal?(cdr a)(cdr b)))
+      (if (or(pair? a)(pair? b))
+          #f
+          (eq? a b))
+      ))
+(define (pow m e)
+  (cond((= e 1) m)
+        (else  (* m
+                  (pow m (- e 1))))))
+
+(define (remove i sequence)
+  (if (null? sequence)
+      nil
+      (append (if(= i 0) nil (list (car sequence)))
+              (remove (- i 1) (cdr sequence)))))
+;////////////////////////////////////////////////////////////////
+(define (variable? x) (symbol? x))
+
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))
+
+(define (=number? exp num) (and (number? exp) (= exp num)))
+
+(define (sum a1 a2)
+  (cond ((= (length a2) 0) a1)
+        ((and(= (length a2) 1)(number? a1)(number? (car a2))) (+ a1 (car a2)))
+        ((=number? a1 0) (sum (car a2) (cdr a2)))
+        ((and(= (length a2) 1)(=number? (car a2) 0)) a1)
+        ((and (number? a1) (number? a2)) (+ a1 a2))
+        (else (append '(+) (list a1) a2))))
+
+(define (make-sum a1 . a2)
+  (sum a1 a2)
+  )
+(define (product a1 a2)
+  (cond ((= (length a2) 0) a1)
+        ((and(= (length a2) 1)(number? a1)(number? (car a2))) (* a1 (car a2)))
+        ((=number? a1 0) 0)
+        ((=number? a1 1) (product (car a2) (cdr a2)))
+        ((and(= (length a2) 1)(=number? (car a2) 0)) 0)
+        ((and(= (length a2) 1)(=number? (car a2) 1)) a1)
+        ((and (number? a1) (number? a2)) (* a1 a2))
+        (else (append '(*) (list a1) a2))))
+
+(define (make-product m1 . m2)
+  (product m1 m2))
+(define (make-exp m e)
+  (cond ((=number? m 0) 0)
+        ((=number? e 0) 1)
+        ((=number? m 1) 1)
+        ((=number? e 1) m)
+        ((and (number? m) (number? e))
+         (pow m e))
+        (else (list '^ m e))))
+
+(define (sum? x) (and (pair? x) (eq? (car x) '+)))
+(define (addend s) (cadr s))
+(define (augend s) (sum 0 (cddr s)))
+
+(define (product? x) (and (pair? x) (eq? (car x) '*)))
+(define (multiplier p) (cadr p))
+(define (multiplicand p) (product 1 (cddr p)))
+
+(define (exp? x) (and (pair? x) (eq? (car x) '^)))
+(define (base p) (cadr p))
+(define (power p) (caddr p))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp) (if (same-variable? exp var) 1 0))
+        ((sum? exp) (make-sum (deriv (addend exp) var)
+                              (deriv (augend exp) var)))
+        ((product? exp)
+         (make-sum
+          (make-product (multiplier exp)
+                        (deriv (multiplicand exp) var))
+          (make-product (deriv (multiplier exp) var)
+                        (multiplicand exp))))
+        ((exp? exp)
+         (make-product (make-product (power exp)
+                                     (make-exp (base exp)
+                                               (- (power exp) 1)))
+                       (deriv (base exp) var)))
+        (else
+         (error "unknown expression type: DERIV" exp))))
+(deriv '(+ (* 3  (^ x 2)) (* 5 x) 6) 'x)

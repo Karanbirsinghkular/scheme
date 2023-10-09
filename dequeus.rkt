@@ -1,0 +1,76 @@
+#lang sicp
+(define (last-pair x)
+  (if (null? (cdr x)) x (last-pair (cdr x))))
+
+(define (make-queue)
+  (let ((front-ptr! nil)
+        (rear-ptr! nil))
+     (define (set-front-ptr! item)
+       (set! front-ptr! item))
+     (define (set-rear-ptr! item)
+       (set! rear-ptr! item))
+     (define (empty-queue?)
+       (null? front-ptr!))
+    (define (front-queue)
+      (if (empty-queue?)
+          (error "FRONT called with an empty queue" )
+          (car front-ptr!)))
+    (define (rear-queue)
+      (if (empty-queue?)
+          (error "FRONT called with an empty queue" )
+           rear-ptr!))
+
+    (define (insert-queue! item)
+      (let ((new-pair (cons item '())))
+        (cond ((empty-queue?)
+               (set-front-ptr! new-pair)
+               (set-rear-ptr! new-pair)
+               front-ptr!)
+              (else
+               (set-cdr! rear-ptr! new-pair)
+               (set-rear-ptr! new-pair)
+               front-ptr!))))
+
+    (define (insert-front-queue! item)
+        (cond ((empty-queue?)
+               (set-front-ptr! item)
+               (set-rear-ptr! item)
+               front-ptr!)
+              (else
+               (set-car! front-ptr! item)
+               front-ptr!)))
+
+    (define (delete-queue!)
+      (cond ((empty-queue?)
+             (error "DELETE! called with an empty queue" front-ptr!))
+            (else (set-front-ptr! (cdr front-ptr!))
+                  front-ptr!)))
+
+        (define (delete-rear-queue!)
+          (cond ((empty-queue?)
+                 (error "DELETE! called with an empty queue" front-ptr!))
+                (else (set-rear-ptr! nil)
+                      front-ptr!)))
+    
+    (define (dispatch m) (cond ((eq? m 'insert-queue!) insert-queue!)
+                               ((eq? m 'delete-queue!) delete-queue!)
+                               ((eq? m 'rear-queue) rear-queue)
+                               ((eq? m 'insert-front-queue!) insert-front-queue!)
+                               ((eq? m 'delete-rear-queue!) delete-rear-queue!)
+                               ((eq? m 'rear-ptr) rear-ptr!)))
+    
+  dispatch))
+(define q (make-queue))
+
+(define (insert-queue! queue item)
+  ((queue 'insert-queue!) item))
+(define (delete-queue! queue)
+  ((queue 'delete-queue!)))
+
+(insert-queue! q 5)
+(insert-queue! q 6)
+((q 'insert-front-queue!) 7)
+((q 'delete-rear-queue!))
+(q 'rear-ptr)
+
+
